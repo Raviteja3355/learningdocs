@@ -1,2 +1,3 @@
 This is the sample file to see the operations of pull and push
 branch name GIT
+used for merging 

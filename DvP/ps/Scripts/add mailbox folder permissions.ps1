@@ -1,0 +1,1 @@
+﻿ Add-MailboxFolderPermission -Identity Sudheer@suneratech.com:\Calendar -User Sandeep.venepally@suneratech.com  -AccessRights Reviewer

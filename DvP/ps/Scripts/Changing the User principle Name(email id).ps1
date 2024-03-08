@@ -1,0 +1,1 @@
+﻿ Set-MsolUserPrincipalName -UserPrincipalName "Venkata.Kompella@suneratech.com" -NewUserPrincipalName "Shobha.kompella@suneratech.com"

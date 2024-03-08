@@ -1,0 +1,548 @@
+================================================boot process/grub/kernel/initrd =========================================================
+■  how many Grub Boot Options are available :
+e Edit the commands before booting
+a Modify or append the kernel arguments before booting
+c Open the GRUB command line
+■  how many boot modes are there:
+Single-User Mode Used to perform maintenance tasks or if you forget the root password (write s or 1 in the end of the kernel parameters in grub editting mode)
+Runlevel 2 or 3 Used to load only partial services during the boot process
+Emergency Mode Used to perform tasks on an unbootable system (write emergency in the end of the kernel parameters in grub editting mode)
+Rescue Mode Used to fix boot issues or reinstall GRUB 
+■  what are the default lines of grub config file:
+cat /boot/grub/grub.conf
+default=0
+timeout=5
+splashimage=(hd0,0)/grub/splash.xpm.gz
+hiddenmenu
+title Red Hat Enterprise Linux Server (2.6.18-92.e15)
+root (hd0,0)
+kernel /vmlinuz-2.6.18-92.e15 ro root=/dev/VolGroup00/Vol00 rhgb quiet
+initrd /initrd-2.6.18-92.e15.img 
+# initrd /initramfs-2.6.32-71.el6.x86_64.img
+■  version of grub
+In RHEL6, the version of GRUB being used is 0.97
+■  how to find where is the grub config file in grub command mode
+grub> find /grub/grub.conf
+(hd0,0)
+grub> root
+(hd0,0): Filesystem type is unknown, partition type 0x8e
+■  how to install grub on the drive which we have found in above example
+grub> setup (hd0)
+■  how many runlevels are there
+0 Halt
+1 Single-user mode
+2 Multiuser with partial services
+3 Full multiuser with networking (text mode)
+4 Not used
+5 Full multiuser graphical mode (provides a GUI desktop in)
+6 Reboot
+■  how many system runlevel related commands do you know
+shutdown: Brings the system to a powered-off state or can reboot the system
+halt: Powers down the system
+reboot: Reboots the system
+poweroff: Works the same as the halt command
+chkconfig: Manages what runlevels services start and stop at
+runlevel: Displays the current and previous runlevels
+init: Changes runlevels
+ntsysv: Works similarly to chkconfig in that it is a menu-driven service management utility
+■  how to check runlevel of the system
+runlevel
+who -r
+■  what you can do in runlevel 1
+You can reset or change the root user’s password.
+You can adjust system files or partitions that are normally locked when the system is in use.
+You can repair system files by replacing them with working copies from a backup or the Red Hat installation CD.
+■  how to check status of the sshd service in different run levels
+chkconfig --list sshd
+■  how to disable a service at boot
+chkconfig sshd off
+■  how to reenable it again
+chkconfig sshd on
+■  How to off the service in run level 4
+chkconfig --level 4 sshd off
+■  command to mount cdrom in rescue mode
+mount /dev/cd-rom /mnt
+■  mount root partition in rescue mode
+chroot /mnt/sysimage
+■  mount a logical volume in rescue mode
+mount -t ext3 /dev/mapper/VolGroup00-Vol02 /misc
+■  check all phycial partitions in rescue mode
+fdisk -l
+■  how to reinstall the GRUB boot loader in rescue mode
+/sbin/grub-install /dev/hda 
+■  How to access root partition in rescue mode
+chroot /mnt/sysimage
+cd /mnt/sysimage
+■  what are the common boot time kernel parameters
+init=/bin/bash
+single
+root=/dev/sda1
+ro
+rw
+panic=10
+maxcpus=2
+debug
+selinux [0|1]
+mem=1024M
+initrd /boot/initrd.img
+hdb=noprobe
+ether=0,0,eth1
+■ in rescue mode , system run level is
+runlevel is 1
+■ differance between rescue mode and emergency mode
+Rescue mode provides the ability to boot a small Linux environment entirely from CD-ROM, or some other boot method, instead of the system's hard drive. As the name implies, rescue mode is provided to rescue you from something. During normal operation, your Linux system uses files located on your system's hard drive to do everything — run programs, store your files, and more.
+In emergency mode, you are booted into the most minimal environment possible. The root file system is mounted read-only and almost nothing is set up. The main advantage of emergency mode over single-user mode is that the init files are not loaded. If init is corrupted or not working, you can still mount file systems to recover data that could be lost during a re-installation
+■ how to mount a initramfs image
+mount -t sysfs initramfs-2.6.32-279.el6.x86_64.img /mnt/ -o loop
+■ how to create a initrd image after installing a new kernel and panic occurs
+come to linux rescue mode
+mount --bind /proc /mnt/sysimage/proc
+mount --bind /dev /mnt/sysimage/dev
+mount --bind /sys /mnt/sysimage/sys
+chroot /mnt/sysimage
+cd /boot
+mv initrd-2.6.18-194.32.1.el5.img initrd-2.6.18-194.32.1.el5.old.img
+mkinitrd initrd-2.6.18-194.32.1.el5.img 2.6.18-194.32.1.el5
+Reboot
+cd /
+sync; sync; sync
+telinit 6
+
+
+=====================================================================
+■ How to check running services"
+service --status-all
+■ How to check partition table 
+fdisk -l
+cat /proc/partitions
+parted
+■ In the partition table, what is the Minor number
+In the partition table, the Minor number is the partition number
+■ what is LBA
+
+■ Major and minor number:
+device files are created by the mknod command and they describe the device using major and minor device numbers.
+All devices controlled by the same device driver have a common major device number. The minor device numbers are used to distinguish between different devices and their controllers. Linux maps the device special file passed in system calls (say to mount a file system on a block device) to the device's device driver using the major device number and a number of system tables, for example the character device table, chrdevs. The major number is actually the offset into the kernel's device driver table, which tells the kernel what kind of device it is (whether it is a hard disk or a serial terminal). The minor number tells the kernel special characteristics of the device to be accessed. For example, the second hard disk has a different minor number than the first. The COM1 port has a different minor number than the COM2 port, each partition on the primary IDE disk has a different minor device number, and so forth. So, for example, /dev/hda2, the second partition of the primary IDE disk has a major number of 3 and a minor number of 2.
+■ what is a device node
+Device nodes (often referred to simply as "devices" in casual conversation) are the files that the kernel, applications, and even command-line tools use when they need to access the hardware. like /dev/lpt0 /dev/sda1
+
+■ I installed sysstat rpm but sar command is giving error Cannot open /var//sa/sa17: No such file or directory
+more /etc/cron.d/sysstat
+/usr/lib64/sa/sa1 1 1
+/usr/lib64/sa/sa2 -A
+now it will work
+q. how to create graph from sar files:
+using ksar utility
+■ what are the character device and block device in linux
+In Unix-like operating systems, a device file or special file is an interface for a device driver that appears in a file system as if it were an ordinary file. There are also special files in MS-DOS and Microsoft Windows. They allow software to interact with a device driver using standard input/output system calls, which simplifies many tasks and unifies user-space I/O mechanisms.
+Device files often provide simple interfaces to peripheral devices, such as printers and serial ports. But they can also be used to access specific resources on those devices, such as disk partitions. Finally, device files are useful for accessing system resources that have no connection with any actual device such as data sinks and random number generators.
+Character devices
+Character special files or character devices relate to devices through which the system transmits data one character at a time by, for example, getchar. These device nodes often serve for stream communication with devices such as mice, keyboards, virtual terminals, and serial modems, and usually do not support random access to data.
+In most implementations, character devices use unbuffered input and output routines. The system reads each character from the device immediately or writes each character to the device immediately.
+Block devices
+Block special files or block devices correspond with devices that move data in the form of blocks by, for example, fread. These device nodes interface the devices, such as hard disks, CD-ROM drives, flash drives and other addressable regions of memory.
+Block devices support random access and seeking, and generally use buffered input and output routines. The operating system allocates a data buffer to hold a single block each for input and output. When a program sends a request to read data from or to write data to the device, the system stores each character of that data in the appropriate buffer. When the buffer fills up, the appropriate operation takes place (data transfer) and the system clears the buffer.
+■ ls -l command output format
+ls -l file1 
+-rw-rw-r--. 1 lilo lilo 0 Feb 26 07:08 file1
+From the output above we can deduct a following information:
+-rw-rw-r- permissions
+1 : number of linked hard-links , if it is 2 then there should be a hard link
+lilo: owner of the file
+lilo: to which group this file belongs to
+0: size
+Feb 26 07:08 modification/creation date and time
+file1: file/directory name
+
+■ how to find hard link files in the system
+find /home -xdev -samefile file1
+find /home -xdev -inum 2655341
+where file1 is the one of the hard linked file
+where 2655341 is the inode number of the hard linked file
+■ how to find permission  of a file without ls -l command
+
+stat -c %a /etc/passwd
+stat -c %A /etc/passwd
+■ what is a watch command
+to watch s in customized format
+■ How to check pid of a daemon
+pidof sshd
+pgrep sshd
+■ how to check mac address
+ifconfig -a
+arp -n
+ip a
+/etc/sysconfig/hwconf  and server NETWORK
+cat /sys/class/net/eth0/address
+■ command to check available network cards in linux
+lspci | egrep -i --color 'network|ethernet'
+lshw -class network
+ifconfig -a
+ip link show
+ip a
+cat /proc/net/dev
+■ how to find network driver
+dmesg | grep -i "network"
+■ I have connected a hdd but not detecting in fdisk -l
+dmesg|more
+depmod -a
+This will scan through your modules, find different dependencies for all installed modules, and map them out to a file (/lib/modules/2.6.32-279.el6.x86_64/modules.dep). This command also creates a number of other files in the /lib/modules/`uname -r`/ directory (the version number of the kernel becomes the name of the subdirectory).
+Once the depmod module scan is complete, you can load additional kernel modules. If that module has dependencies, then all the needed modules will automatically load first.
+check the output and recompile kernel if needed
+■  where is kernel information is stored
+There is a virtual file system that gets created in the /proc directory to hold information and parameters for the kernel.
+■  how to Prints all information relating to the kernel
+uname -a
+■  how to Shows the kernel name
+uname -s
+■  how to Requests kernel release information
+uname -r
+yum info kernel
+■  how to Requests the kernel version
+uname -v
+■  2.6.32-71.el6  what represents in kernel
+2 is majer version, 6 is major release of major version 2, 32 is patch version of kernel and 71 is redhat release version, el6 is RHEL 6
+■  kernel folder structure
+/boot Place where the kernel and boot files are kept
+/proc Current hardware configuration and status
+/usr/src Source code of the kernel
+/lib/modules Kernel modules
+■  how many modules are loaded
+lsmod
+cat /proc/modules
+■  how to find information of a module
+modinfo ext4
+■  where you will add entry to change kernel parameters
+/etc/sysctl.conf file or in /proc/sys/ folder structure.
+■  command to desplay kernel settings
+sysctl -a
+■  how to reload setting from sysctl.conf
+sysctl -p
+■  command to change kernel parameters 
+sysctl -w net.ipv4.ip_forward=1
+echo 1 > /proc/sys/net/ipv4/ip_forward
+value will change to 0 after reboor
+■  you don't know what kind of network card is installed
+modprobe -lt net
+■  how  to upgrade from kernel version 2.6.21 to kernel version 2.6.22 using patch
+zcat patch-2.6.22.gz | patch -p0
+■  where is the generic kernel source code installed
+/usr/src/linux directory
+■  display the comprehensive configuration of all the modules:
+modprobe -c | less
+■  to check dependencied of a module 
+modprobe --show-depends mac80211
+modprobe -v fcoe
+■  which rpm is installed for systool command
+yum install sysfsutils
+■  how to blacklist a module during booting
+add entry in /etc/modprobe.d/blacklist.conf
+■  how to unload a module
+modprobe -r mac80211
+rmmod mac80211
+■  how to load a module
+modprobe mac80211
+■  how to list the options that are set for a loaded module:
+systool -v -m ext4
+■  how to List Available Kernel Modules
+modprobe -l
+■  how to List Currently Loaded Modules
+lsmod
+■  how to load dependancies but do not load a module
+modprobe -vn ext4
+■  how to install new initrmfs image in rhel 6
+dracut " initramfs-$ (uname -r).i mg" $ (uname -r)
+■  how to list the file contents of an initram fs image
+lsinitrd /boot/initramfs-2.6.32-279.el6.x86_64.img
+■  how to load module without dependancies
+insmod ext4
+■  command to check primary file/directory of a linked file/folder
+ls -i /tmp/keyring-3Efbv8
+■   how to change time zone 
+rm -rf /etc/localtime
+ln -sf /usr/share/zoneinfo/Asia/Calcutta /etc/localtime
+■  command to list all hardware 
+lshw -short
+■  how to print disk used information with file system type
+df -Th
+■  how to convert ext3 file system to ext4 filesystem on /dev/sda2 
+umount /dev/sda2
+tune2fs -O extents,uninit_bg,dir_index /dev/sda2
+e2fsck -pf /dev/sda2
+mount /dev/sda2 /home
+■  if you are not able to delete a file then how will u remove the file
+remove the file using inode number of the file
+find . -inum 782263 -exec rm -i {} \;
+■  where are file attributes stored in file systems
+in inodes
+■  how to display lable of a filesystem
+e2label /dev/sda1
+■ how to give lable to file system
+e2lable /dev/sda1 data
+■  how to see size of a device using fdisk command
+fdisk -s /dev/sda1
+■  what is the minimum limitation of size in fdisk command
+40 MB
+■  how to fix "partiton table is not in order" issue
+fdisk /dev/sad
+x
+f
+■  max limit for fdisk/sfdisk command is
+2 TB
+■  command to display partiton table and size of that partition
+sfdisk -luM /dev/sda
+■  how to list more than 2 TB partition size
+parted /dev/sda
+parted print
+■  how to set unit type TB to a  device using parted
+unit TB
+■  how to check file system warnings
+sfdisk -V
+■ how to check swap partition on the system
+swapon -s
+■ how to check partition before creating swap partition
+mkswap -c /dev/sda1
+■ how to create a swap partition 
+mkswap /dev/sda1
+■ how to enable newly created swap 
+swapon /dev/sda1
+■ how to create a swap partition using a file
+dd if=/dev/zero of=/mnt/file_swap bs=1024 count=1000000
+mkswap /mnt/file_swap
+swapon /mnt/file_swap
+■ how to check error on mounted file system
+fuser -c /dev/sr0
+■ how to kill a process using a file system
+fuser -k /dev/sr0
+■ show all process using a file system
+fuser -m /dev/sr0
+■ how to see open files on a device
+lsof /dev/sr0
+■ which file is updated when u mount or umount a file system
+/etc/mtab
+■ how to find device using a lable
+findfs LABEL=data
+blkid|grep data
+■ how to mount using a label
+mount LABEL=data /opt/company_data
+■ how to repair a file system without prompting any question
+e2fsck -p /dev/sda1
+■ check filesystem but do nothing
+e2fsck -n /dev/sda1
+■ how to give yes to all question in e2fsck
+e2fsck -y /dev/sda1
+■ how to set acl to a file
+setfacl -m u:user01:rwx /opt/backup/file1
+■ how to check acl details
+getfacl file1
+■ how to remove acl for a user
+setfacl -x u:user01 /opt/backup/file1
+■ how to remove acl froma file
+setfacl -b file
+■ which parameter is used to set dhcp for eth0 
+DHCP_HOSTNAME=RHEL01
+■ how to assign IP using ifconfig command
+ifconfig eth0 172.168.1.1 netmask 255.255.255.0
+■ how to disable IPV6 using /etc/sysconfig/network
+NETWORKING_IPV6=no
+■ rpm command examples:
+-qc Lists all config files
+-qd Lists all documentation files
+-qi Displays information about the package
+-ql Lists the files in a package
+-qa Queries all packages
+-qf Displays information about the specified file
+-qR Display dependancies of a package or "rpm -qpR mediawiki-1.4rc1-4.i586.rpm"
+■ how to extract a rpm file
+rpm2cpio <package> | cpio -id
+■ how to install a old package
+rpm -ivh --replacepkgs nano-2.2.6-1.x86_64.rpm
+rpm -Uvh --oldpackage --replacefiles <path_to_old_package>
+■ how to list package details with installed date
+rpm -qa --last
+■ differance between erase and remove in yum command
+The difference is that erase removes all packages but saves the config files for those packages in case you ever want to reinstall them. The remove command deletes everything from the package.
+■ how to update repo after adding a new rpm in packages 
+createrepo –update
+■ options in useradd command
+-b Sets the base directory for the new user account home directory
+-c COMMENT Creates a description/label for the user account
+-e EXPIRE_DATE Sets the date when the account will expire
+-d Creates a specified home directory for the new user account
+-r Creates a system account
+-s SHELL Defines what shell the user will  in to
+-u UID Forces the use of the UID for the new user account
+-f password expiry date
+■ options in usermod command
+-c COMMENT Specifies the new value of the GECOS field
+-d HOME_DIR Identifies the new home directory for the user account
+-g GROUP Uses GROUP as the new primary group
+-G GROUPS Specifies a new list of supplementary GROUPS
+-l NEW_IN Provides a new value for the in name
+-L Locks the user account
+-s SHELL Opens a new in shell for the user account
+-u UID Specifies a new UID for the user account
+-U Unlocks the user account
+■ options in chage command
+-d LAST_DAY Indicates the day the password was last changed
+-E EXPIRE_DATE Sets the account expiration date
+-I INACTIVE Changes the password in an inactive state after the account expires
+-l Shows account aging information
+-m MIN_DAYS Sets the minimum number of days between password changes
+-M MAX_DAYS Sets the maximum number of days a password is valid
+-W WARN_DAYS Sets the number of days to warn before the password expires
+■ options in passwd command
+-l lock the user
+-u unlock the user
+-g change password of group
+■ how to add users in a secondary group
+usermod -G Sales user02
+■ in which file variables related to password is configured like minimum password length
+/etc/login.defs
+■ how to delete a users cron
+crontab -u user01 -r
+■ format of crontab file
+minute,hour,day of month,month,day of week,command
+■ how to set a cron for user01
+crontab -u user01 -e
+■ which file is called by cron when system boots and system related crons should start
+/etc/anacrontab
+■ command to check syntax of httpd.conf file
+service httpd configtest
+httpd -S  for virtual host config 
+httpd -t  for httpd.conf config
+■ command to check loaded modules in httpd
+httpd -M
+■ command to debug httpd.conf
+httpd -e debug
+■ how to reexport directories whithout restarting nfs
+exportfs -avr 
+■ how to check all parts of nfs service is up or not
+rpcinfo -p
+■ command to check smb.conf file
+testparm
+■ option in smbpasswd command
+-a Adds a user
+-d Disables a user
+-e Enables a user
+-x Deletes a user
+■ how to confirm user is enabled to use samba service
+pdbedit -w -L
+■ which file have information of leased IPs 
+/var/lib/dhcpd/dhcpd.leases
+■ which command is used to check inode details on a file system and on which mount point the device will be mounted
+tune2fs -l /dev/sdb1
+df -i
+■ how to increase inode numbers in a file system while u have 50 GB disk space free but not able to creat any file
+ inode-max is usually three time the file-max value and that file-max value must be set according to the available ram in the server
+■ location where file-max and inode-nr values are kept
+/proc/sys/fs/
+■ how will u calculate file-max value 
+1MB=64 files
+if you have 4GB of RAM then value will be 4 x 1024 x 64 = 262144
+so configure fs.file-max = 262144 into /etc/sysctl.conf
+■ how to set inode numbers while creating a file system
+first run below command to check inode number on a device (device should be unmounted)
+mke2fs -n /dev/sdb1
+then assign inode numbers 
+mke2fs -N 281120 /dev/sdb1
+■ how to check which interface is having issue in bonding
+check file : /proc/net/bonding/bond0
+■ insmod command
+used to load module without dependancies
+■  how many daemons works in nfs service
+The major NFS daemons are:
+nfsd : nfsd handles client requests from remote systems. Multiple copies of this daemon are usually run so that several requests can be handled simultaneously. However, too many copies of nfsd can increase the demand for CPU time to the point where a drop in performance results. For the best performance the number of copies of nfsd should be set to four.
+biod : biod handles block I/O requests for NFS client processes. As with nfsd, several copies are usually run and the number of copies should be set to four.
+rpc.mountd : rpc.mountd handles mount requests from remote systems.
+rpc.lockd : rpc.lockd manages file locking on NFS client and server machines.
+rpc.statd : rpc.statd manages lock crash and recovery services for both client and server systems.
+portmap : portmap is not strictly an NFS daemon, although it is required for NFS to function properly. It facilitates the initial connection between local and remote servers. Under Solaris the rpcbind daemon performs the same function.
+■ rpc.statd,portmap,rpciod,rpc.idmapd,rpc.rquotad,rpc.mountd,nfsd
+The rpc.statd program is a support program to NFS which supports file locking when requested. 
+portmap : portmap is not strictly an NFS daemon, although it is required for NFS to function properly. It facilitates the initial connection between local and remote servers. Under Solaris the rpcbind daemon performs the same function.
+in rhel 6
+rpcbind Forwards incoming requests to the appropriate subservice
+rpc.idmapd Maps the UID and GID to users and groups
+rpc.lockd Manages file locks and releases in case of client disconnect
+rpc.nfsd Responds to client requests for file access
+rpc.rquotad Provides statistics on disk quotas to clients
+rpc.statd Works with rpc.lockd to provide recovery services
+■ how will u monitor CPU utilization
+mpstat -P ALL
+sar -u 2 5
+where 2 is in seconds and 5 is in counts or 5 times
+■ how to store output of sar command and read it from the file
+nohup sar -o output.file 12 8 >/dev/null 2>&1 &
+sar -f output.file
+■ how to monitor cpu uses using ps command
+ps -eo pcpu,pid,user,args | sort -k 1 -r | head -10
+■ how to monitor HDD utilization
+iostat -d -x 5 3
+d displays only the device utilization report
+x Display extended statistics
+■ how to find memory details 
+dmidecode --type memory
+■ how to find memory uses by a process and a user
+pmap `pgrep sshd`
+pmap `pgrep -u 1000`
+■ how to repair file system using blocks
+dumpe2fs /dev/sda3|grep -i superblock
+e2fsck -f -b 8193 /dev/sda3
+mount sb=8193 /dev/sda23 /mnt
+■ resources not available message coming when user is trying to ssh
+too many process are opend for that user, use ulimit for user and kill some process related to that user
+■ what is ulimit
+used to limit amount of memory and number of process for a service or user
+■ how to define memory limit for a process
+in the configuration file of the service like my.cnf , php.ini
+■ how many file a user can open
+cat /proc/sys/fs/file-max
+ulimit -Hn
+ulimit -Sn
+■ if more than 1 Lac files are opened and file open limit is less than 1 Lac then how will u increase file Descriptor
+sysctl -w fs.file-max=100000
+■ how to set limit for a service so it can access/open max 10000 files
+vi /etc/security/limits.conf
+httpd soft nofile 4096
+httpd hard nofile 10240
+su - httpd
+ulimit -Hn
+ulimit -Sn
+■ how to get help of a command
+help -m ulimit
+■ how to set limit for a user not to create file more than 1 GB 
+vi /etc/security/limits.conf
+vivek       hard  fsize  1024000
+■ how to limit number of process for a user so he can not run more programs on the system
+vivek hard nproc 300
+■ how to define cpu uses limit for a process
+cpulimit -p 1313 -l 30
+cpulimit -P /opt/firefox/firebox -l 30
+■ what is soft and hard mount in nfs
+1. Soft Mount
+Suppose you have mounted a NFS filesystem using “soft mount” . When a program or application requests a file from the NFS filesystem, NFS client daemons will try to retrieve the data from the NFS server. But, if it doesn’t get any response from the NFS server (due to any crash or failure of NFS server), the NFS client will report an error to the process on the client machine requesting the file access. The advantage of this mechanism is “fast responsiveness” as it doesn’t wait for the NFS server to respond. But, the main disadvantage of this method is data corruption or loss of data. So, this is not a recommended option to use.
+mount -o rw,soft host.nf_server.com/home /techhome
+2. Hard Mount
+If you have mounted the NFS filesystem using hard mount, it will repeatedly retry to contact the server. Once the server is back online the program will continue to execute undisturbed from the state where it was during server crash. We can use the mount option “intr” which allows NFS requests to be interrupted if the server goes down or cannot be reached. Hence the recommended settings are hard and intr options.
+mount -o rw,hard,intr host.nf_server.com/home /techhome
+■ how many daemons starts when u start httpd service
+minserver parameter value will be the number of process
+■  how will you reduce the disk space if it is 100% full?
+■  how to upgrade the OS version?
+■  what is the difference between RHCE 5 & RHCE 6.
+■  what is the difference between NFS 3 & 4
+■  How will u install the OS through kickstart method.
+■  if the system performance is slow/responding slow, how will you resolve
+■  how to check the version of rpm
+■  how to install oracle
+■  logrorate command examples
+■  type of bonding and how to configure bonding
+modes: 
+mode=0 (Balance Round Robin)
+mode=1 (Active backup)
+mode=2 (Balance XOR)
+mode=3 (Broadcast)
+mode=4 (802.3ad)
+mode=5 (Balance TLB)
+mode=6 (Balance ALB)

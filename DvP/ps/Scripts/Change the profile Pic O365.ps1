@@ -1,0 +1,1 @@
+﻿Set-UserPhoto -Identity "Sudheer Mareddi" -PictureData ([System.IO.File]::ReadAllBytes("C:\Users\sandeep.venepally\Downloads\WhatsApp Image 2021-06-07 at 2.37.38 PM.JPEG"))

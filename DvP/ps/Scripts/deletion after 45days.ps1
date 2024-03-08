@@ -1,0 +1,1 @@
+﻿Get-ChildItem –Path "D:\Path of the folder" | Where-Object {($_.LastWriteTime -lt (Get-Date).AddDays(-46))} | Remove-Item

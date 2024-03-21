@@ -73,18 +73,23 @@ Terraform destroy –target=module.modulename (which is used to delete that part
 
 We can uses these data sources where if we can create a resource group using the other language apart from terraform. these documentation is available in terraform documentation only.	
 
+Data sources is the data module which helps us to use the existing azure resources in our terraform
+
 Datasources in terraforms are used to get info about resource external to terraform and use them to setup your terraform resource.
 
 If we use the terraform destroy it only delete the resources which was created by only terraform
 
+							##Locals
+
 Locals are those inorder to use it simple way of notation initially we need to declare the at the beginning of the code we need to use 
 it throughout the code. local.rg_info.name
 
-Local {
+Locals {
 Rg_info = azurerm_resource_group.rg1
 }
 
 Locals can be referred or called with the same file or with in the code only.
+						##workspace
 
 Terraform workspace list : which is used to show the workspace list
 
@@ -93,3 +98,21 @@ Terraform workspace new name : to create a new workspace command and switch as w
 Terraform workspace select name :  in order to switch between the workspaces
 
 Terraform apply –var-file dev.tfvars : to deploy only in the dev environment in the currentworkspace
+
+Terraform apply –var-file dev.tfvars -auto-approve : which will deploy directly 
+						##Provisioners
+These are used for the configuration management purpose (like chef,ansible and puppet)
+
+3 types of provisioners available they are
+	file
+	local-Exec
+	Remote-exec
+
+file : These are usd to copy the files from the local machine to the destination machine
+			provisioner "file"{
+
+			}
+
+local-exec : if we execute any commad in local which will run the comman on the remote machine and gives the output related to the remote machine 
+
+remote-exec : it can be used to run any commands on the destination machine by connecting loggging into the machine

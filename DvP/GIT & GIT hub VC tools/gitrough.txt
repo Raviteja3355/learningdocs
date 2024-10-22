@@ -4,3 +4,5 @@
 
  vi /etc/ssh/sshd_config
 
+# To push into a branch we have to use the command 
+   git push origin main

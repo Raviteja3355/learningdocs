@@ -1,0 +1,6 @@
+ ==================== GIT ROUGH ====================
+
+ passwordlessauthentication enabling the SSH passwordlessauthentication 
+
+ vi /etc/ssh/sshd_config
+
